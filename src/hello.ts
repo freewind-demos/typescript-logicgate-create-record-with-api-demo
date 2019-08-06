@@ -1,70 +1,72 @@
-import {UsersApi} from './logicgate-api/UsersApi';
 import {baseUrl} from './devAccount';
 import {createOAuth} from './createOAuth';
+import {RecordsApi} from './logicgate-api/RecordsApi';
+import {WorkflowsApi} from './logicgate-api/WorkflowsApi';
+import {FieldsApi} from './logicgate-api/FieldsApi';
+import {OAuth} from './logicgate-api/Authentication';
+import {Field} from './logicgate-api/Field';
+import {Record} from './logicgate-api/Record';
+
+async function fetchWorkflowId(stepId: string, oauth: OAuth) {
+  const workflowsApi = new WorkflowsApi(baseUrl);
+  workflowsApi.setDefaultAuthentication(oauth);
+  const res1 = await workflowsApi.findByStepUsingGET(stepId);
+  return res1.body.id!;
+}
+
+async function fetchWorkflowFields(workflowId: string, oauth: OAuth) {
+  const fieldsApi = new FieldsApi(baseUrl);
+  fieldsApi.setDefaultAuthentication(oauth);
+  const res2 = await fieldsApi.findByWorkflowWithValuesUsingGET(workflowId);
+  return res2.body;
+}
+
+function buildRecord(fields: Field[], stepId: string): Record {
+  const field = fields.find(it => it.name === 'Name (Full):')!;
+  console.log('Name (Full):', field);
+
+  return {
+    'step': {
+      'id': stepId,
+    },
+    'currentValueMaps': [
+      {
+        currentValues: [
+          {
+            textValue: 'Freewind-from-realapi',
+            discriminator: 'Common',
+          },
+        ],
+        field: {
+          id: field.id,
+          fieldType: field.fieldType,
+        },
+      },
+    ],
+  };
+}
+
+async function createRecord(record: Record, oauth: OAuth) {
+  const recordsApi = new RecordsApi(baseUrl);
+  recordsApi.setDefaultAuthentication(oauth);
+  const res = await recordsApi.createPublicUsingPOST(record);
+  return res;
+}
 
 async function main() {
   const oauth = await createOAuth();
 
-  const usersApi = new UsersApi(baseUrl);
-  usersApi.setDefaultAuthentication(oauth);
+  const stepId = '7Ycf0hko'; // contacts
 
-  const users = await usersApi.findAllUsingGET3();
+  const workflowId = await fetchWorkflowId(stepId, oauth);
+  console.log('workflowId: ', workflowId);
 
-  // [Active {
-  //     active: undefined,
-  //     convertibleTo: undefined,
-  //     created: undefined,
-  //     currentValues: undefined,
-  //     discrete: undefined,
-  //     fieldType: undefined,
-  //     global: undefined,
-  //     id: 'ewsF3HJv',
-  //     label: undefined,
-  //     labels: undefined,
-  //     name: 'LogicGate Administrator',
-  //     operators: undefined,
-  //     tooltip: undefined,
-  //     updated: undefined,
-  //     valueType: undefined,
-  //     workflow: undefined,
-  //     workflowId: undefined,
-  //     archived: undefined,
-  //     assignments: [],
-  //     company: 'LogicGate',
-  //     _default: false,
-  //     disabled: false,
-  //     discriminator: undefined,
-  //     email: 'company@logicgate.com',
-  //     empty: false,
-  //     field: undefined,
-  //     fieldId: undefined,
-  //     first: undefined,
-  //     hasValue: undefined,
-  //     imageUrl:
-  //      'https://some/v.png',
-  //     intercomHash: undefined,
-  //     isDefault: undefined,
-  //     languageTag: undefined,
-  //     last: undefined,
-  //     lastLogin: null,
-  //     locked: false,
-  //     loginAttempts: undefined,
-  //     numericValue: undefined,
-  //     password: undefined,
-  //     priority: undefined,
-  //     records: undefined,
-  //     resetPasswordToken: undefined,
-  //     roles: undefined,
-  //     sendEmail: undefined,
-  //     status: 'Active',
-  //     superUser: true,
-  //     textValue: undefined,
-  //     tier: 'PRIMARY',
-  //     timeZone: undefined
-  //   },
-  //   ...
-  // ]
-  console.log(users.body);
+  const fields = await fetchWorkflowFields(workflowId, oauth);
+  console.log('fields:', fields);
+
+  const record: Record = buildRecord(fields, stepId);
+  const res = await createRecord(record, oauth);
+  console.log('record creation response: ', res);
 }
 
 main();

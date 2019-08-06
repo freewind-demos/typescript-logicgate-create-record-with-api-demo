@@ -1,6 +1,10 @@
+import http from 'http';
+import localVarRequest from 'request';
 import {Field} from './Field';
 import {PageOfField} from './PageOfField';
 import {Authentication, VoidAuth} from './Authentication';
+import {defaultBasePath} from './defaultBasePath';
+import {ObjectSerializer} from './ObjectSerializer';
 
 export enum FieldsApiApiKeys {
 }
