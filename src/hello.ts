@@ -1,20 +1,21 @@
-import {baseUrl} from './devAccount';
+import {clientSecret} from './devAccount';
 import {createOAuth} from './createOAuth';
-import {RecordsApi} from './logicgate-api/RecordsApi';
-import {WorkflowsApi} from './logicgate-api/WorkflowsApi';
-import {FieldsApi} from './logicgate-api/FieldsApi';
-import {OAuth} from './logicgate-api/Authentication';
-import {Field} from './logicgate-api/Field';
-import {Record} from './logicgate-api/Record';
+import {RecordsApi} from 'typescript-logicgate-api-demo/dist/public-api/RecordsApi';
+import {WorkflowsApi} from 'typescript-logicgate-api-demo/dist/public-api/WorkflowsApi';
+import {FieldsApi} from 'typescript-logicgate-api-demo/dist/public-api/FieldsApi';
+import {OAuth} from 'typescript-logicgate-api-demo/dist/public-api/Authentication';
+import {Field} from 'typescript-logicgate-api-demo/dist/public-api/Field';
+import {Record} from 'typescript-logicgate-api-demo/dist/public-api/Record';
+import {fetchToken} from 'typescript-logicgate-api-demo/dist/extra-api/fetchToken';
 
-async function fetchWorkflowId(stepId: string, oauth: OAuth) {
+async function fetchWorkflowId(baseUrl: string, stepId: string, oauth: OAuth) {
   const workflowsApi = new WorkflowsApi(baseUrl);
   workflowsApi.setDefaultAuthentication(oauth);
   const res1 = await workflowsApi.findByStepUsingGET(stepId);
   return res1.body.id!;
 }
 
-async function fetchWorkflowFields(workflowId: string, oauth: OAuth) {
+async function fetchWorkflowFields(baseUrl: string, workflowId: string, oauth: OAuth) {
   const fieldsApi = new FieldsApi(baseUrl);
   fieldsApi.setDefaultAuthentication(oauth);
   const res2 = await fieldsApi.findByWorkflowWithValuesUsingGET(workflowId);
@@ -46,7 +47,7 @@ function buildRecord(fields: Field[], stepId: string): Record {
   };
 }
 
-async function createRecord(record: Record, oauth: OAuth) {
+async function createRecord(baseUrl: string, record: Record, oauth: OAuth) {
   const recordsApi = new RecordsApi(baseUrl);
   recordsApi.setDefaultAuthentication(oauth);
   const res = await recordsApi.createPublicUsingPOST(record);
@@ -54,18 +55,20 @@ async function createRecord(record: Record, oauth: OAuth) {
 }
 
 async function main() {
-  const oauth = await createOAuth();
+  const token = await fetchToken(clientSecret);
+  const oauth = await createOAuth(token.access_token);
 
   const stepId = '7Ycf0hko'; // contacts
 
-  const workflowId = await fetchWorkflowId(stepId, oauth);
+  const {baseUrl} = clientSecret;
+  const workflowId = await fetchWorkflowId(baseUrl, stepId, oauth);
   console.log('workflowId: ', workflowId);
 
-  const fields = await fetchWorkflowFields(workflowId, oauth);
+  const fields = await fetchWorkflowFields(baseUrl, workflowId, oauth);
   console.log('fields:', fields);
 
   const record: Record = buildRecord(fields, stepId);
-  const res = await createRecord(record, oauth);
+  const res = await createRecord(baseUrl, record, oauth);
   console.log('record creation response: ', res);
 }
 

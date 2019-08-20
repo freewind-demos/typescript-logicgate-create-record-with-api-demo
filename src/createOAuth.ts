@@ -1,8 +1,6 @@
-import {fetchToken} from './fetchToken';
-import {OAuth} from './logicgate-api/Authentication';
+import {OAuth} from "typescript-logicgate-api-demo/dist/public-api/Authentication";
 
-export async function createOAuth() {
-  const token = await fetchToken();
+export function createOAuth(token: string): OAuth {
   const oauth = new OAuth();
   oauth.accessToken = token;
   return oauth;
