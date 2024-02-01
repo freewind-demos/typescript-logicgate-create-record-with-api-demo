@@ -1,19 +1,19 @@
 {
-    "scripts": {
-        "start": "ts-node ./src/hello.ts"
-    },
-    "devDependencies": {
-        "@types/axios": "0.14.0",
-        "@types/bluebird": "3.5.27",
-        "@types/node": "8.9.5",
-        "@types/request": "2.48.1",
-        "ts-node": "7.0.1",
-        "typescript": "3.2.2"
-    },
-    "dependencies": {
-        "axios": "0.19.0",
-        "bluebird": "3.5.5",
-        "request": "2.88.0",
-        "typescript-logicgate-api-demo": "https://github.com/freewind-demos/typescript-logicgate-api-demo"
-    }
+  "scripts": {
+    "start": "ts-node ./src/hello.ts"
+  },
+  "devDependencies": {
+    "@types/axios": "0.14.0",
+    "@types/bluebird": "3.5.27",
+    "@types/node": "8.9.5",
+    "@types/request": "2.48.1",
+    "ts-node": "7.0.1",
+    "typescript": "5.3.3"
+  },
+  "dependencies": {
+    "axios": "0.19.0",
+    "bluebird": "3.5.5",
+    "request": "2.88.0",
+    "typescript-logicgate-api-demo": "https://github.com/freewind-demos/typescript-logicgate-api-demo"
+  }
 }
